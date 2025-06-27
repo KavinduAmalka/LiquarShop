@@ -8,6 +8,9 @@
 }
 
 @theme{
-  --color-primary: #7b3f00;
-  --color-secondary: #1c1c1c;
+  --color-primary:#800020;
+  --color-secondary: #4B2C2C;
+  --color-accent: #9B111E;
+  --color-background: #FAF7F2;
+  --color-text: #333333;
 }
