@@ -21,6 +21,16 @@ import trust_icon from "./trust_icon.svg";
 import black_arrow_icon from "./black_arrow_icon.svg";
 import white_arrow_icon from "./white_arrow_icon.svg";
 import add_address_iamge from "./add_address_image.svg";
+import main_banner_bg from "./main_banner_bg.jpg";
+import main_banner_bg_sm from "./main_banner_bg_sm.jpg";
+import cocktails_mixers from "./Cocktails & Mixers.jpg";
+import champagne from "./Champagne.jpg";
+import gin from "./Gin.jpg";
+import rum from "./Rum.jpg";
+import vodka from "./Vodka.jpg";
+import whiskey from "./Whiskey.jpg";
+import beer from "./Beer.jpg";
+import wine from "./Wine.jpg";
 
 export const assets = {
   logo,
@@ -46,8 +56,59 @@ export const assets = {
   white_arrow_icon,
   add_address_iamge,
   box_icon,
+  main_banner_bg,
+  main_banner_bg_sm
 };
 
-
+export const categories = [
+  {
+    name: "Gin",
+    path: "Gin",
+    image: gin,
+    bgColor: "#EAF5F2",
+ },
+  {
+    name: "Rum",
+    path: "Rum",
+    image: rum,
+    bgColor: "#F6EEE3",
+  },
+  {
+    name: "Vodka",
+    path: "Vodka",
+    image: vodka,
+    bgColor: "#F1F5FF", 
+  },
+  {
+    name: "Champagne",
+    path: "Champagne",
+    image: champagne,
+    bgColor: "#FFF7E6",
+  },
+  {
+    name: "Whiskey",
+    path: "Whiskey",
+    image: whiskey,
+    bgColor: "#F8F0E3",
+  },
+  {
+    name: "Beer",
+    path: "Beer",
+    image: beer,
+    bgColor: "#FEF4D7",
+  },
+  {
+    name: "Wine",
+    path: "Wine",
+    image: wine,
+    bgColor: "#FBEFF2",
+  },
+  {
+    name: "Cocktails & Mixers",
+    path: "Cocktails-mixers",
+    image: cocktails_mixers,
+    bgColor: "#FDEDEC",
+  }
+]
 
 
