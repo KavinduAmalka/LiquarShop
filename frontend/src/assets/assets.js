@@ -13,11 +13,11 @@ import order_icon from "./order_icon.svg";
 import upload_area from "./upload_area.png";
 import profile_icon from "./profile_icon.png";
 import menu_icon from "./menu_icon.svg";
-import delivery_truck_icon from "./delivery_truck_icon.svg";
-import leaf_icon from "./leaf_icon.svg";
-import coin_icon from "./coin_icon.svg";
+import delivery_truck_icon from "./delivery_truck_icon.jpg";
+import leaf_icon from "./leaf_icon.jpg";
+import coin_icon from "./coin_icon.jpg";
 import box_icon from "./box_icon.svg";
-import trust_icon from "./trust_icon.svg";
+import trust_icon from "./trust_icon.jpg";
 import black_arrow_icon from "./black_arrow_icon.svg";
 import white_arrow_icon from "./white_arrow_icon.svg";
 import add_address_iamge from "./add_address_image.svg";
@@ -39,6 +39,8 @@ import Moet_Chandon_Brut_750ml from "./Moët_and_Chandon_Brut_750ml.png";
 import Corona_Extra_6_Pack from "./Corona_Extra_6_Pack.png";
 import Jacobs_Creek_Shiraz_750ml from "./Jacob’s_Creek_Shiraz_750ml.png";
 import Margarita_Mix_1L from "./Margarita_Mix_1L.png";
+import bottom_banner_image from "./bottom_banner_image.jpeg";
+import bottom_banner_image_sm from "./bottom_banner_image_sm.jpeg";
 
 export const assets = {
   logo,
@@ -65,7 +67,9 @@ export const assets = {
   add_address_iamge,
   box_icon,
   main_banner_bg,
-  main_banner_bg_sm
+  main_banner_bg_sm,
+  bottom_banner_image,
+  bottom_banner_image_sm,
 };
 
 export const categories = [
