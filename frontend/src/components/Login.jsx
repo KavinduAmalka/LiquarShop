@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 
 const Login = () => {
     
-    const {setShowUserLogin} =useAppContext();  
+    const {setShowUserLogin, setUser} =useAppContext();  
 
     const [state, setState] = React.useState("login");
     const [name, setName] = React.useState("");
@@ -16,6 +16,7 @@ const Login = () => {
         email:"test@thebottlehouse",
         name:"TheBottleHouse",
       })
+        setShowUserLogin(false);
     }
 
   return (
