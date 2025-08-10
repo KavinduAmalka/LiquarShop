@@ -32,6 +32,9 @@ import whiskey from "./Whiskey.jpg";
 import beer from "./Beer.jpg";
 import wine from "./Wine.jpg";
 import Johnnie_Walker_Black_Label_750ml from "./Johnnie_Walker_Black_Label_750ml.png";
+import Johnnie_Walker_Black_Label_750ml_2 from "./Johnnie_Walker_Black_Label_750ml_2.png";
+import Johnnie_Walker_Black_Label_750ml_3 from "./Johnnie_Walker_Black_Label_750ml_3.png";
+import Johnnie_Walker_Black_Label_750ml_4 from "./Johnnie_Walker_Black_Label_750ml_4.png";
 import Smirnoff_Vodka_750ml from "./Smirnoff_Vodka_750ml.png";
 import Bacardi_White_Rum_750ml from "./Bacardi_White_Rum_750ml.png";
 import Bombay_Sapphire_Gin_750ml from "./Bombay_Sapphire_Gin_750ml.png";
@@ -185,7 +188,7 @@ export const dummyProducts = [
     category: "Whiskey",
     price: 3500,
     offerPrice: 3200,
-    image: [Johnnie_Walker_Black_Label_750ml],
+    image: [Johnnie_Walker_Black_Label_750ml, Johnnie_Walker_Black_Label_750ml_2, Johnnie_Walker_Black_Label_750ml_3, Johnnie_Walker_Black_Label_750ml_4],
     description: [
       "12-year-old Scotch whisky",
       "Smooth, smoky flavor",

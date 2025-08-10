@@ -5,10 +5,10 @@ import { useAppContext } from '../context/AppContext';
 const ProductCard = ({product}) => {
     const {currency, addToCart, cartItems, removeFromCart, navigate} = useAppContext();
 
-    if (!product) return null;
+   
 
-    return (
-        <div className="border border-gray-500/20 rounded-md md:px-4 px-3 py-2 bg-white min-w-56 max-w-56 w-full">
+    return product && (
+        <div onClick={()=> {navigate(`/products/${product.category.toLowerCase()}/${product._id}`); scrollTo(0,0)}} className="border border-gray-500/20 rounded-md md:px-4 px-3 py-2 bg-white min-w-56 max-w-56 w-full">
             <div className="group cursor-pointer flex items-center justify-center px-2 h-48 overflow-hidden">
                 <img className="group-hover:scale-105 transition w-full h-full object-contain" src={product.image[0]} alt={product.name} />
             </div>
