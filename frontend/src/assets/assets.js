@@ -20,7 +20,7 @@ import box_icon from "./box_icon.svg";
 import trust_icon from "./trust_icon.jpg";
 import black_arrow_icon from "./black_arrow_icon.svg";
 import white_arrow_icon from "./white_arrow_icon.svg";
-import add_address_iamge from "./add_address_image.svg";
+import add_address_iamge from "./add_address_image.png";
 import main_banner_bg from "./main_banner_bg.jpg";
 import main_banner_bg_sm from "./main_banner_bg_sm.jpg";
 import cocktails_mixers from "./Cocktails_and_Mixers.jpg";
