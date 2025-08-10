@@ -345,6 +345,24 @@ export const dummyOrders = [
     createdAt: "2025-06-30T12:30:00.000Z",
     updatedAt: "2025-06-30T12:35:00.000Z",
   },
+  {
+    _id: "order002",
+    userId: "user5678",
+    items: [
+      {
+        product: dummyProducts[3],
+        quantity: 2,
+        _id: "item004",
+      },
+    ],
+    amount: 5200,
+    address: dummyAddress[0],
+    status: "Processing",
+    paymentType: "COD",
+    isPaid: true,
+    createdAt: "2025-06-30T12:30:00.000Z",
+    updatedAt: "2025-06-30T12:35:00.000Z",
+  },
 ];
 
 
