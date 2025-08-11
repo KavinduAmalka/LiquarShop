@@ -16,7 +16,7 @@ import menu_icon from "./menu_icon.svg";
 import delivery_truck_icon from "./delivery_truck_icon.jpg";
 import leaf_icon from "./leaf_icon.jpg";
 import coin_icon from "./coin_icon.jpg";
-import box_icon from "./box_icon.svg";
+import box_icon from "./box_icon.png";
 import trust_icon from "./trust_icon.jpg";
 import black_arrow_icon from "./black_arrow_icon.svg";
 import white_arrow_icon from "./white_arrow_icon.svg";
