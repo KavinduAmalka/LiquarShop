@@ -1,4 +1,4 @@
-
+import jwt from 'jsonwebtoken';
 
 const authUser = (req, res, next) => {
   const {token} = req.cookies;
@@ -9,14 +9,15 @@ const authUser = (req, res, next) => {
 
   try {
      const tokenDecoded = jwt.verify(token, process.env.JWT_SECRET)
-     if(tokenDecoded.id){
-        req.body.userID = tokenDecoded.id;
-     }else{
-        return res.status(401).json({success: false, message: "Unauthorized access"});
-     }
+    if(tokenDecoded.id){
+      if (!req.body) req.body = {};
+      req.body.userID = tokenDecoded.id;
+    }else{
+      return res.status(401).json({success: false, message: "Unauthorized access"});
+    }
      next();
   }catch(error){
-    res.json({success: false, message: error.message});
+    res.status(500).json({success: false, message: error.message});
   }
 }
 

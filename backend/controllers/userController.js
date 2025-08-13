@@ -34,7 +34,7 @@ export const register = async (req, res)=> {
 
   }catch(error){
     console.error(error.message);
-    res.json({success: false, message: error.message});
+    res.status(500).json({success: false, message: error.message});
   }
 }
 
@@ -70,7 +70,7 @@ export const login = async (req, res) => {
 
   }catch(error){
     console.error(error.message);
-    res.json({success: false, message: error.message});
+    res.status(500).json({success: false, message: error.message});
   }
 }
 
@@ -83,6 +83,22 @@ export const isAuth = async (req, res) => {
     
    } catch(error) {
     console.error(error.message);
-    res.json({success: false, message: error.message});
+    res.status(500).json({success: false, message: error.message});
+  }
+}
+
+//Logout a user: /api/user/logout
+
+export const logout = async (req, res) => {
+  try {
+   res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+   });
+   return res.json({success: true, message: "Logged out successfully"});
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({success: false, message: error.message});
   }
 }
