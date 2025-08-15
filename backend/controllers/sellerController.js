@@ -19,7 +19,7 @@ try {
 
     return res.json({success: true, message: "Seller logged in successfully"});
   }else{
-    return res.status(401).json({success: false, message: "Invalid email or password"});
+    return res.json({success: false, message: "Invalid email or password"});
   }
 } catch (error) {
    console.log(error.message);
@@ -30,13 +30,14 @@ try {
 //Seller isAuth : /api/seller/is-auth
 export const isSellerAuth = async (req, res) => {
   try {
-    return res.json({success: true, user})
-    
-   } catch(error) {
+    // user info is attached by authSeller middleware
+    const user = req.user;
+    return res.json({ success: true, user });
+  } catch (error) {
     console.error(error.message);
-    res.status(500).json({success: false, message: error.message});
+    res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 //Logout a user: /api/seller/logout
 
