@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { assets } from '../assets/assets.js' // Adjust the path as necessary
+import { assets } from '../assets/assets.js'
 import { useAppContext } from '../context/AppContext.jsx'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -54,22 +54,23 @@ const Navbar = () => {
                     <button className="absolute -top-2 -right-3 text-xs text-white bg-primary w-[18px] h-[18px] rounded-full">{getCartCount()}</button>
                 </div>
 
-                {!user ? ( <button onClick={()=> setShowUserLogin(true)} 
-                className="cursor-pointer px-8 py-2 bg-primary hover:bg-accent transition text-white rounded-full">
-                    Login
-                </button>
-                ):
-                (
-                  <div className='relative group'>
+                {!user ? ( 
+                  <button onClick={()=> setShowUserLogin(true)} 
+                    className="cursor-pointer px-8 py-2 bg-primary hover:bg-accent transition text-white rounded-full">
+                      Login
+                  </button>
+                ) : (
+                  <div className='relative group flex flex-col items-center'>
                     <img src={assets.profile_icon} alt="Profile" className="w-10"/>
+                    {user?.name && (
+                      <span className="text-xs mt-1 font-medium text-gray-700 whitespace-nowrap">{user.name}</span>
+                    )}
                     <ul className='hidden group-hover:block absolute top-10 right-0 bg-white shadow border border-gray-200 py-2.5 w-30 rounded-md text-sm z-40'>
                       <li onClick={()=>navigate("my-orders")} className='p-1.5 pl-3 hover:bg-primary/10 cursor-pointer'>My Orders</li>
                       <li onClick={logout} className='p-1.5 pl-3 hover:bg-primary/10 cursor-pointer'>Logout</li>
                     </ul>
                   </div>
-                )
-                }
-               
+                )}
             </div>
 
             <div className='flex items-center gap-6 sm:hidden'>
@@ -90,9 +91,15 @@ const Navbar = () => {
                 <NavLink onClick={()=> setOpen(false)} to='/' >Home</NavLink>
                 <NavLink onClick={()=> setOpen(false)} to='/products' >All Product</NavLink>
                 {user && 
-                <NavLink onClick={()=> setOpen(false)} to='/products' >My Orders</NavLink>
+                  <NavLink onClick={()=> setOpen(false)} to='/products' >My Orders</NavLink>
                 }
                 <NavLink onClick={()=> setOpen(false)} to='/' >Contact</NavLink>
+                {user && user.name && (
+                  <div className="flex flex-col items-center w-full mt-2">
+                    <img src={assets.profile_icon} alt="Profile" className="w-10"/>
+                    <span className="text-xs mt-1 font-medium text-gray-700 whitespace-nowrap">{user.name}</span>
+                  </div>
+                )}
 
                 {!user ?(
                   <button onClick={()=>{
@@ -107,11 +114,9 @@ const Navbar = () => {
                   className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-accent transition text-white rounded-full text-sm">
                     Logout
                 </button>
-                )
-                }
-                
+                )}
             </div>
-             ) }
+            ) }
 
         </nav>
               
