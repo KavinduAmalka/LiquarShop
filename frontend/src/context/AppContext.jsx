@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { dummyProducts } from "../assets/assets";
 import { toast } from "react-hot-toast";
@@ -42,7 +42,8 @@ export const AppContextProvider = ({children})=>{
         const { data } = await axios.get('/api/user/is-auth');
         if(data.success){
            setUser(data.user)
-           setCartItems(data.user.cartItems)
+           // Only set cartItems from backend if cart is empty (first load)
+           setCartItems(prev => Object.keys(prev).length === 0 ? data.user.cartItems : prev)
         }
       } catch (error) {
           setUser(null)
@@ -70,6 +71,28 @@ export const AppContextProvider = ({children})=>{
         fetchSeller();
         fetchProducts();
     }, []); 
+
+    // Debounce cart updates to backend
+    const updateTimeout = useRef();
+
+    useEffect(() => {
+      if (!user) return;
+      if (updateTimeout.current) clearTimeout(updateTimeout.current);
+      updateTimeout.current = setTimeout(() => {
+        const updateCart = async () => {
+          try {
+            const { data } = await axios.post('/api/cart/update', { cartItems });
+            if (!data.success) {
+              toast.error(data.message);
+            }
+          } catch (error) {
+            toast.error(error.message);
+          }
+        };
+        updateCart();
+      }, 500); // 500ms debounce
+      return () => clearTimeout(updateTimeout.current);
+    }, [cartItems, user]);
 
     //Add product to cart
     const addToCart = (itemID)=>{

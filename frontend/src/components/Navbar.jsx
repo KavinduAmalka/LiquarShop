@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { assets } from '../assets/assets.js'
+import { assets } from '../assets/assets.js' // Adjust the path as necessary
 import { useAppContext } from '../context/AppContext.jsx'
 import axios from 'axios'
 import toast from 'react-hot-toast'
