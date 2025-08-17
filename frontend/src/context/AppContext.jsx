@@ -42,11 +42,13 @@ export const AppContextProvider = ({children})=>{
         const { data } = await axios.get('/api/user/is-auth');
         if(data.success){
            setUser(data.user)
-           // Only set cartItems from backend if cart is empty (first load)
-           setCartItems(prev => Object.keys(prev).length === 0 ? data.user.cartItems : prev)
+           // Always load cart items from database when user is authenticated
+           setCartItems(data.user.cartItems || {})
         }
       } catch (error) {
           setUser(null)
+          // Clear cart items when user is not authenticated
+          setCartItems({})
       }
     }
 
@@ -76,7 +78,9 @@ export const AppContextProvider = ({children})=>{
     const updateTimeout = useRef();
 
     useEffect(() => {
-      if (!user) return;
+      // Only update cart if user is logged in and cart is not empty
+      if (!user || Object.keys(cartItems).length === 0) return;
+      
       if (updateTimeout.current) clearTimeout(updateTimeout.current);
       updateTimeout.current = setTimeout(() => {
         const updateCart = async () => {
@@ -96,6 +100,12 @@ export const AppContextProvider = ({children})=>{
 
     //Add product to cart
     const addToCart = (itemID)=>{
+      if (!user) {
+        toast.error("Please login to add items to cart");
+        setShowUserLogin(true);
+        return;
+      }
+
       let cartData = structuredClone(cartItems);
 
       if(cartData[itemID]){
@@ -109,6 +119,11 @@ export const AppContextProvider = ({children})=>{
 
     //Update Cart Item Quantity
     const updateCartItem = (itemID, quantity) =>{
+      if (!user) {
+        toast.error("Please login to update cart");
+        return;
+      }
+
       let cartData = structuredClone(cartItems);
       cartData[itemID] = quantity;
       setCartItems(cartData);
@@ -117,6 +132,11 @@ export const AppContextProvider = ({children})=>{
 
     //Remove Item from Cart
     const removeFromCart = (itemID) => {
+      if (!user) {
+        toast.error("Please login to modify cart");
+        return;
+      }
+
       let cartData = structuredClone(cartItems);
       if(cartData[itemID]){
         cartData[itemID] -= 1;
@@ -149,10 +169,51 @@ export const AppContextProvider = ({children})=>{
       return Math.floor(totalAmount * 100) / 100; 
     }
 
+    // Logout function that clears cart items
+    const logoutUser = async () => {
+      try {
+        const { data } = await axios.get('/api/user/logout')
+        if(data.success){
+          toast.success(data.message)
+          setUser(null);
+          setCartItems({}); 
+          navigate('/');
+        }else{
+          toast.error(data.message)
+        }
+      } catch (error) {
+        toast.error(error.message)
+      }
+    }
+
+    // Login function that loads cart items from database
+    const loginUser = async (email, password, name = null, isRegister = false) => {
+      try {
+        const endpoint = isRegister ? '/api/user/register' : '/api/user/login';
+        const payload = isRegister ? { name, email, password } : { email, password };
+        
+        const { data } = await axios.post(endpoint, payload);
+        
+        if(data.success){
+          setUser(data.user);
+          // Fetch the complete user data with cart items after login/register
+          await fetchUser();
+          navigate('/');
+          return { success: true };
+        } else {
+          toast.error(data.message);
+          return { success: false, message: data.message };
+        }
+      } catch (error) {
+        toast.error(error.message);
+        return { success: false, message: error.message };
+      }
+    }
+
     const value = {navigate, user, setUser, isSeller, setIsSeller, 
       showUserLogin,setShowUserLogin, products, setProducts, currency,
       addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery,
-      getCartCount, getCartAmount, axios, fetchProducts};
+      getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser};
 
     return <AppContext.Provider value={value}>
         {children}

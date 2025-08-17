@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 const Login = () => {
     
-    const {setShowUserLogin, setUser, axios, navigate} =useAppContext();  
+    const {setShowUserLogin, loginUser} =useAppContext();  
 
     const [state, setState] = React.useState("login");
     const [name, setName] = React.useState("");
@@ -15,15 +15,14 @@ const Login = () => {
         try {
             event.preventDefault();
             
-            const { data } = await axios.post(`/api/user/${state}`,{
-                name, email, password
-            });
-            if(data.success){
-                navigate('/')
-                setUser(data.user)
-                setShowUserLogin(false)
-            }else{
-                toast.error(data.message)
+            const result = await loginUser(email, password, name, state === "register");
+            
+            if(result.success){
+                setShowUserLogin(false);
+                // Clear form
+                setName("");
+                setEmail("");
+                setPassword("");
             }
             
         } catch (error) {
