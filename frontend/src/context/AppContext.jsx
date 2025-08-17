@@ -148,6 +148,21 @@ export const AppContextProvider = ({children})=>{
       setCartItems(cartData);
     }
 
+    //Clear Cart (both locally and in backend)
+    const clearCart = async () => {
+      if (!user) {
+        setCartItems({});
+        return;
+      }
+
+      try {
+        setCartItems({});
+        await axios.post('/api/cart/update', { cartItems: {} });
+      } catch (error) {
+        toast.error("Failed to clear cart");
+      }
+    }
+
     //Get Cart Item Count
     const getCartCount = () => {
       let totalcount = 0;
@@ -212,8 +227,8 @@ export const AppContextProvider = ({children})=>{
 
     const value = {navigate, user, setUser, isSeller, setIsSeller, 
       showUserLogin,setShowUserLogin, products, setProducts, currency,
-      addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery,
-      getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser};
+      addToCart, updateCartItem, removeFromCart, clearCart, cartItems, searchQuery, setSearchQuery,
+      getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser, setCartItems};
 
     return <AppContext.Provider value={value}>
         {children}

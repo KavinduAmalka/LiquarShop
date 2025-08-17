@@ -4,7 +4,7 @@ import { assets, dummyAddress } from "../assets/assets";
 import toast from "react-hot-toast";
 
  const Cart = () => {
-    const {products, currency, cartItems, removeFromCart, updateCartItem, getCartCount, navigate, getCartAmount, axios, user} = useAppContext();
+    const {products, currency, cartItems, removeFromCart, updateCartItem, getCartCount, navigate, getCartAmount, axios, user, clearCart} = useAppContext();
     const [cartArray, setCartArray] = useState([])
     const [addresses, setAddresses] = useState([])
     const [showAddress, setShowAddress] = useState(false)
@@ -40,7 +40,31 @@ import toast from "react-hot-toast";
     }
 
     const placeOrder = async () => {
+       try {
+           if(!selectedAddress){
+            return toast.error("Please select an address");
+           }
 
+           //Place Order with COD 
+           if(PaymentOption === "COD"){
+            const { data } = await axios.post('/api/order/cod', {
+                userId: user._id,
+                items:cartArray.map(item=>({product: item._id, quantity: item.quantity})),
+                address: selectedAddress._id
+            })
+
+            if(data.success){
+                toast.success(data.message)
+                // Clear cart both locally and in backend
+                await clearCart()
+                navigate('/my-orders')
+            }else{
+                toast.error(data.message)
+            }
+           }
+       } catch (error) {
+            toast.error(error.message)
+       }
     }
 
     useEffect(() =>{
