@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { assets } from '../assets/assets'
+import { useAppContext } from '../context/AppContext'
+import toast from 'react-hot-toast'
 
 // Input Field Component
 const InputField = ({type, placeholder, name, handleChange, address})=>(
@@ -15,6 +17,8 @@ const InputField = ({type, placeholder, name, handleChange, address})=>(
 )
 const AddAddress = () => {
 
+  const {axios, user, navigate} = useAppContext()
+
   const [address, setAddress] = useState({
     firstName: "",
     lastName: "",
@@ -22,7 +26,7 @@ const AddAddress = () => {
     street:"",
     city: "",
     state: "",
-    zipcode: "",
+    zipCode: "",
     country: "",
     phone: "",
   })
@@ -39,7 +43,32 @@ const AddAddress = () => {
 
   const onSubmitHandler = async (e)=> {
     e.preventDefault();
+    
+    if (!user || !user._id) {
+      toast.error("Please login to add address");
+      navigate('/');
+      return;
+    }
+    
+    try {
+        const { data } = await axios.post('/api/address/add', {address, userId: user._id});
+
+        if(data.success){
+          toast.success(data.message);
+          navigate('/cart')
+        }else{
+          toast.error(data.message);
+        }
+    } catch (error) {
+        toast.error(error.message)
+    }
   }
+
+  useEffect(()=>{
+    if(!user){
+      navigate('/cart')
+    }
+  },[])
 
   return (
     <div className='mt-16 pb-16'>
@@ -59,7 +88,7 @@ const AddAddress = () => {
               <InputField handleChange={handleChange} address={address} name='state' type='text' placeholder='State'/>
             </div>
             <div className='grid grid-cols-2 gap-4'>
-              <InputField handleChange={handleChange} address={address} name='zipcode' type='number' placeholder='Zip code'/>
+              <InputField handleChange={handleChange} address={address} name='zipCode' type='number' placeholder='Zip code'/>
               <InputField handleChange={handleChange} address={address} name='country' type='text' placeholder='Country'/>
             </div>
             <InputField handleChange={handleChange} address={address} name='phone' type='text' placeholder='Phone'/>
@@ -70,7 +99,7 @@ const AddAddress = () => {
         </div>
         <img 
           className='w-70 h-70 md:w-100 md:h-100 object-contain md:mr-16 mb-8 md:mb-0 md:mt-0 transition-all duration-300' 
-          src={assets.add_address_iamge}  
+          src={assets.add_address_image}  
           alt='Add Address'
         />
       </div>

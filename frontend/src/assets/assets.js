@@ -20,7 +20,7 @@ import box_icon from "./box_icon.png";
 import trust_icon from "./trust_icon.jpg";
 import black_arrow_icon from "./black_arrow_icon.svg";
 import white_arrow_icon from "./white_arrow_icon.svg";
-import add_address_iamge from "./add_address_image.png";
+import add_address_image from "./add_address_image.png";
 import main_banner_bg from "./main_banner_bg.jpg";
 import main_banner_bg_sm from "./main_banner_bg_sm.jpg";
 import cocktails_mixers from "./Cocktails_and_Mixers.jpg";
@@ -67,7 +67,7 @@ export const assets = {
   trust_icon,
   black_arrow_icon,
   white_arrow_icon,
-  add_address_iamge,
+  add_address_image,
   box_icon,
   main_banner_bg,
   main_banner_bg_sm,
@@ -315,7 +315,7 @@ export const dummyAddress = [
     street: "45 Bar Lane",
     city: "Colombo",
     state: "Western",
-    zipcode: 10100,
+    zipCode: 10100,
     country: "Sri Lanka",
     phone: "0771234567",
   },
