@@ -69,15 +69,15 @@ const Navbar = () => {
 
             {/* Mobile Menu */}
             { open && (
-            <div className={`${open ? 'flex' : 'hidden'} absolute top-[100px] left-0 w-full bg-white shadow-md py-4 flex-col items-start gap-2 px-5 text-sm md:hidden`}>
-                <NavLink onClick={()=> setOpen(false)} to='/' >Home</NavLink>
-                <NavLink onClick={()=> setOpen(false)} to='/products' >All Product</NavLink>
+            <div className={`${open ? 'flex' : 'hidden'} absolute top-[100px] right-0 w-14/16 h-screen bg-white shadow-md py-4 flex-col items-end gap-5 px-10 text-sm md:hidden z-100`}>
+                <NavLink onClick={()=> setOpen(false)} to='/' className="text-right">Home</NavLink>
+                <NavLink onClick={()=> setOpen(false)} to='/products' className="text-right">All Product</NavLink>
                 {user && 
-                  <NavLink onClick={()=> setOpen(false)} to='/products' >My Orders</NavLink>
+                  <NavLink onClick={()=> setOpen(false)} to='/my-orders' className="text-right">My Orders</NavLink>
                 }
-                <NavLink onClick={()=> setOpen(false)} to='/' >Contact</NavLink>
+                <NavLink onClick={()=> setOpen(false)} to='/' className="text-right">Contact</NavLink>
                 {user && user.name && (
-                  <div className="flex flex-col items-center w-full mt-2">
+                  <div className="flex flex-col items-end w-full mt-2">
                     <img src={assets.profile_icon} alt="Profile" className="w-10"/>
                     <span className="text-xs mt-1 font-medium text-gray-700 whitespace-nowrap">{user.name}</span>
                   </div>
