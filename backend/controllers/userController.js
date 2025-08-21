@@ -23,13 +23,15 @@ export const register = async (req, res)=> {
 
     const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
 
-    res.cookie('token',token, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // CSRF protection
-      maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiration time (7 days)
-      path: '/' // Ensure cookie is available for all paths
-    })
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
+    };
+
+    res.cookie('token', token, cookieOptions)
 
     return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
 
@@ -66,13 +68,17 @@ export const login = async (req, res) => {
        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
        console.log('Token created, setting cookie...');
 
-      res.cookie('token',token, {
+      const cookieOptions = {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', 
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        path: '/' // Ensure cookie is available for all paths
-      })
+        path: '/'
+      };
+      
+      console.log('Setting cookie with options:', cookieOptions);
+      
+      res.cookie('token', token, cookieOptions);
 
       console.log('Login successful for user:', user.email);
       return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
@@ -98,29 +104,47 @@ export const isAuth = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-   console.log('Logout attempt - clearing cookies...');
+   console.log('Logout attempt - clearing cookies...', 'Environment:', process.env.NODE_ENV);
    
-   // Clear cookie with all possible configurations to ensure it's removed
-   res.clearCookie('token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    path: '/',
-    domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
-   });
+   // Get the domain from request headers for proper cookie clearing
+   const origin = req.headers.origin;
+   console.log('Request origin:', origin);
    
-   // Also try clearing without domain (for different domain scenarios)
-   res.clearCookie('token', {
+   // Clear cookie with multiple configurations to ensure it works in production
+   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
     path: '/'
-   });
+   };
    
-   // Clear with just the name (fallback)
+   console.log('Cookie options for clearing:', cookieOptions);
+   
+   // Primary cookie clear
+   res.clearCookie('token', cookieOptions);
+   
+   // Additional attempts with different configurations for cross-origin scenarios
+   if (process.env.NODE_ENV === 'production') {
+     // Try without sameSite
+     res.clearCookie('token', {
+       httpOnly: true,
+       secure: true,
+       path: '/'
+     });
+     
+     // Try with lax sameSite
+     res.clearCookie('token', {
+       httpOnly: true,
+       secure: true,
+       sameSite: 'lax',
+       path: '/'
+     });
+   }
+   
+   // Basic clear as fallback
    res.clearCookie('token');
    
-   console.log('Cookies cleared successfully');
+   console.log('All cookie clear attempts completed');
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {
     console.error('Logout error:', error.message);

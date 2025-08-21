@@ -246,37 +246,73 @@ export const AppContextProvider = ({children})=>{
       return Math.floor(totalAmount * 100) / 100; 
     }
 
+    // Manual client-side cookie clearing as fallback
+    const clearClientCookies = () => {
+      console.log('Manually clearing client-side cookies...');
+      // Get all cookies and clear them
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/;domain=" + window.location.hostname); 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      });
+      console.log('Client cookies after clearing:', document.cookie);
+    };
+
     // Logout function that clears cart items
     const logoutUser = async () => {
       try {
         console.log('Starting logout process...');
+        console.log('Current user before logout:', user);
+        console.log('Current cookies before logout:', document.cookie);
         
         const { data } = await axios.get('/api/user/logout')
         
         console.log('Logout response:', data);
         
         if(data.success){
-          // Clear user-related state
-          setUser(null);
-          setCartItems({}); 
-          
-          // Force refresh authentication status
-          setTimeout(() => {
-            fetchUser();
-          }, 100);
-          
-          toast.success(data.message);
-          navigate('/');
+          console.log('Server logout successful, clearing client state...');
         } else {
-          toast.error(data.message);
+          console.log('Server logout failed, but continuing with client cleanup:', data.message);
         }
+        
+        // Always clear client state regardless of server response
+        setUser(null);
+        setCartItems({}); 
+        
+        // Clear cookies manually as additional safety measure
+        clearClientCookies();
+        
+        // Force refresh authentication status after a short delay
+        setTimeout(() => {
+          console.log('Refreshing auth status after logout...');
+          fetchUser();
+        }, 300);
+        
+        toast.success(data.success ? data.message : "Logged out successfully");
+        navigate('/');
+        
       } catch (error) {
-        console.error('Logout error:', error);
+        console.error('Logout request failed:', error);
+        console.error('Error details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        });
+        
         // Even if logout fails on server, clear client state
+        console.log('Clearing client state due to logout error...');
         setUser(null);
         setCartItems({});
-        toast.error(error.response?.data?.message || error.message);
+        
+        // Clear cookies manually
+        clearClientCookies();
+        
+        toast.success('Logged out successfully');
         navigate('/');
+        
+        // Still try to refresh auth status
+        setTimeout(() => {
+          fetchUser();
+        }, 300);
       }
     }
 
