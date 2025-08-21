@@ -7,6 +7,29 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
+// Add axios interceptor to handle auth errors globally
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Authentication failed - clear everything
+      try {
+        // Clear localStorage and sessionStorage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear cookies
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+      } catch (e) {
+        console.warn('Could not clear storage/cookies:', e);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Utility function to clear all browser storage
 const clearBrowserStorage = () => {
   try {
@@ -61,11 +84,30 @@ export const AppContextProvider = ({children})=>{
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
+        } else {
+          // Server says user is not authenticated
+          setUser(null);
+          setCartItems({});
+          clearBrowserStorage();
         }
       } catch (error) {
-          setUser(null)
-          // Clear cart items when user is not authenticated
-          setCartItems({})
+          // Network error or authentication failed
+          console.warn('Auth check failed:', error.response?.data?.message || error.message);
+          setUser(null);
+          setCartItems({});
+          
+          // If it's a 401 error, clear any stale cookies
+          if (error.response?.status === 401) {
+            clearBrowserStorage();
+            // Try to clear cookies via document.cookie as well
+            try {
+              document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+              });
+            } catch (e) {
+              console.warn('Could not clear cookies:', e);
+            }
+          }
       }
     }
 
@@ -201,29 +243,66 @@ export const AppContextProvider = ({children})=>{
       return Math.floor(totalAmount * 100) / 100; 
     }
 
-    // Logout function that clears cart items
+    // Enhanced logout function with multiple fallback strategies
     const logoutUser = async () => {
+      // Step 1: Clear local state immediately (optimistic logout)
+      setUser(null);
+      setCartItems({});
+      setIsSeller(false);
+      clearBrowserStorage();
+      
+      let logoutSuccess = false;
+      
       try {
-        const { data } = await axios.get('/api/user/logout')
+        // Step 2: Attempt authenticated logout first
+        const { data } = await axios.get('/api/user/logout', {
+          timeout: 3000 // 3 second timeout
+        });
+        
         if(data.success){
-          toast.success(data.message)
-        }else{
-          toast.error(data.message)
+          toast.success(data.message);
+          logoutSuccess = true;
         }
       } catch (error) {
-        toast.error("Logout failed, but clearing local session")
-      } finally {
-        // Always clear state regardless of server response
-        setUser(null);
-        setCartItems({});
-        setIsSeller(false);
-        
-        // Clear browser storage
-        clearBrowserStorage();
-        
-        // Force page reload to ensure clean state
-        window.location.href = '/';
+        console.warn('Authenticated logout failed:', error.message);
       }
+      
+      // Step 3: If authenticated logout failed, try force logout
+      if (!logoutSuccess) {
+        try {
+          await axios.post('/api/user/force-logout', {}, {
+            timeout: 3000
+          });
+          console.log('Force logout completed');
+        } catch (error) {
+          console.warn('Force logout failed:', error.message);
+        }
+      }
+      
+      // Step 4: Client-side cleanup regardless of server response
+      try {
+        // Clear any remaining cookies via document.cookie
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        // Also try with different domains for Vercel
+        const hostname = window.location.hostname;
+        if (hostname.includes('vercel.app')) {
+          document.cookie.split(";").forEach(function(c) { 
+            const cookieName = c.replace(/^ +/, "").replace(/=.*/, "");
+            document.cookie = `${cookieName}=;expires=${new Date().toUTCString()};path=/;domain=.vercel.app`;
+            document.cookie = `${cookieName}=;expires=${new Date().toUTCString()};path=/;domain=${hostname}`;
+          });
+        }
+      } catch (e) {
+        console.warn('Could not clear document cookies:', e);
+      }
+      
+      // Step 5: Hard reload to ensure clean state
+      setTimeout(() => {
+        window.location.replace('/');
+      }, 100);
     }
 
     // Login function that loads cart items from database
