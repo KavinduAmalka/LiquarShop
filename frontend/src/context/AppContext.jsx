@@ -14,8 +14,7 @@ export const AppContextProvider = ({children})=>{
     const currency = import.meta.env?.VITE_CURRENCY || '$';
 
     const navigate =useNavigate();
-    const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [user, setUser] = useState(true);
     const [isSeller,setIsSeller] = useState(false);
     const [showUserLogin,setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
@@ -45,18 +44,11 @@ export const AppContextProvider = ({children})=>{
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
-        } else {
-          // If API returns success: false, clear user state
-          setUser(null)
-          setCartItems({})
         }
       } catch (error) {
-          // If there's a network error or auth fails, clear user state
-          console.log('Auth check failed:', error.message);
           setUser(null)
+          // Clear cart items when user is not authenticated
           setCartItems({})
-      } finally {
-          setIsLoading(false)
       }
     }
 
@@ -77,13 +69,6 @@ export const AppContextProvider = ({children})=>{
 
     // Load products when component mounts
     useEffect(() => {
-        // Clear any stale data on app load
-        if (performance.navigation.type === 1) {
-          // Page was refreshed, clear potentially stale data
-          localStorage.removeItem('user');
-          sessionStorage.removeItem('user');
-        }
-        
         fetchUser();
         fetchSeller();
         fetchProducts();
@@ -205,28 +190,14 @@ export const AppContextProvider = ({children})=>{
         const { data } = await axios.get('/api/user/logout')
         if(data.success){
           toast.success(data.message)
+          setUser(null);
+          setCartItems({}); 
+          navigate('/');
         }else{
           toast.error(data.message)
         }
       } catch (error) {
         toast.error(error.message)
-      } finally {
-        // Always clear user state regardless of API response
-        setUser(null);
-        setCartItems({});
-        setIsSeller(false);
-        
-        // Clear any local storage data
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Navigate to home
-        navigate('/');
-        
-        // Force page reload to clear all cached state
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 100);
       }
     }
 
@@ -254,7 +225,7 @@ export const AppContextProvider = ({children})=>{
       }
     }
 
-    const value = {navigate, user, setUser, isLoading, isSeller, setIsSeller, 
+    const value = {navigate, user, setUser, isSeller, setIsSeller, 
       showUserLogin,setShowUserLogin, products, setProducts, currency,
       addToCart, updateCartItem, removeFromCart, clearCart, cartItems, searchQuery, setSearchQuery,
       getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser, setCartItems};
