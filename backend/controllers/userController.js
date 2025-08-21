@@ -98,15 +98,32 @@ export const isAuth = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+   console.log('Logout attempt - clearing cookies...');
+   
+   // Clear cookie with all possible configurations to ensure it's removed
    res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    path: '/' // Ensure cookie is cleared from all paths
+    path: '/',
+    domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
    });
+   
+   // Also try clearing without domain (for different domain scenarios)
+   res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    path: '/'
+   });
+   
+   // Clear with just the name (fallback)
+   res.clearCookie('token');
+   
+   console.log('Cookies cleared successfully');
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {
-    console.error(error.message);
+    console.error('Logout error:', error.message);
     res.json({success: false, message: error.message});
   }
 }

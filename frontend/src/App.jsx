@@ -18,6 +18,7 @@ import AddProduct from './pages/seller/AddProduct'
 import ProductList from './pages/seller/ProductList'
 import Orders from './pages/seller/Orders'
 import Loading from './components/Loading'
+import DebugAuth from './components/DebugAuth'
 
 const App = () => {
 
@@ -26,7 +27,8 @@ const App = () => {
 
   return (
     <div className='text-default min-h-screen text-gray-700 bg-white'>
-
+      
+      <DebugAuth />
       {isSellerPath ? null : <Navbar />}
       {showUserLogin ? <Login/> :null}
 

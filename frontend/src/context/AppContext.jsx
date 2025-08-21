@@ -86,9 +86,13 @@ export const AppContextProvider = ({children})=>{
     const fetchUser = async () =>{
       try {
         console.log('Fetching user auth status...');
+        console.log('Current cookies:', document.cookie);
+        
         const { data } = await axios.get('/api/user/is-auth');
         console.log('User auth response:', data);
-        if(data.success){
+        
+        if(data.success && data.user){
+           console.log('Setting user data:', data.user);
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
@@ -126,6 +130,7 @@ export const AppContextProvider = ({children})=>{
 
     // Load products when component mounts
     useEffect(() => {
+        console.log('AppContext: Component mounting, starting initial data fetch...');
         fetchUser();
         fetchSeller();
         fetchProducts();
@@ -244,17 +249,40 @@ export const AppContextProvider = ({children})=>{
     // Logout function that clears cart items
     const logoutUser = async () => {
       try {
+        console.log('Starting logout process...');
+        
         const { data } = await axios.get('/api/user/logout')
+        
+        console.log('Logout response:', data);
+        
         if(data.success){
-          toast.success(data.message)
+          // Force clear all user-related state
           setUser(null);
           setCartItems({}); 
+          
+          // Clear any localStorage items that might persist user data
+          localStorage.clear();
+          sessionStorage.clear();
+          
+          // Force refresh authentication status
+          setTimeout(() => {
+            fetchUser();
+          }, 100);
+          
+          toast.success(data.message);
           navigate('/');
-        }else{
-          toast.error(data.message)
+        } else {
+          toast.error(data.message);
         }
       } catch (error) {
-        toast.error(error.message)
+        console.error('Logout error:', error);
+        // Even if logout fails on server, clear client state
+        setUser(null);
+        setCartItems({});
+        localStorage.clear();
+        sessionStorage.clear();
+        toast.error(error.response?.data?.message || error.message);
+        navigate('/');
       }
     }
 
@@ -273,12 +301,15 @@ export const AppContextProvider = ({children})=>{
         console.log('Response received:', { success: data.success, message: data.message });
         
         if(data.success){
+          console.log('Login successful! User data:', data.user);
           setUser(data.user);
           // Fetch the complete user data with cart items after login/register
           await fetchUser();
+          toast.success('Login successful!');
           navigate('/');
           return { success: true };
         } else {
+          console.log('Login failed:', data.message);
           toast.error(data.message);
           return { success: false, message: data.message };
         }
@@ -295,10 +326,19 @@ export const AppContextProvider = ({children})=>{
       }
     }
 
+    // Manual cookie clearing function for debugging
+    const clearAllCookies = () => {
+      console.log('Clearing all cookies manually...');
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      });
+      console.log('Cookies after manual clear:', document.cookie);
+    };
+
     const value = {navigate, user, setUser, isSeller, setIsSeller, 
       showUserLogin,setShowUserLogin, products, setProducts, currency,
       addToCart, updateCartItem, removeFromCart, clearCart, cartItems, searchQuery, setSearchQuery,
-      getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser, setCartItems};
+      getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser, setCartItems, clearAllCookies};
 
     return <AppContext.Provider value={value}>
         {children}
