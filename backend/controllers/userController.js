@@ -27,6 +27,7 @@ export const register = async (req, res)=> {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // CSRF protection
+      path: '/', // Explicitly set path
       maxAge: 7 * 24 * 60 * 60 * 1000 // Cookie expiration time (7 days)
     })
 
@@ -63,6 +64,7 @@ export const login = async (req, res) => {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', 
+        path: '/', // Explicitly set path
         maxAge: 7 * 24 * 60 * 60 * 1000 
       })
 
@@ -89,11 +91,25 @@ export const isAuth = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+   // Clear cookie with exact same options as when it was set
    res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    path: '/', // Explicitly set path
+    domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
    });
+   
+   // Also try clearing without domain to ensure compatibility
+   if (process.env.NODE_ENV === 'production') {
+     res.clearCookie('token', {
+       httpOnly: true,
+       secure: true,
+       sameSite: 'none',
+       path: '/'
+     });
+   }
+   
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {
     console.error(error.message);

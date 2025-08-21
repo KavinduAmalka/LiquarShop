@@ -7,6 +7,23 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
+// Utility function to clear all browser storage
+const clearBrowserStorage = () => {
+  try {
+    // Clear localStorage
+    localStorage.clear();
+    // Clear sessionStorage
+    sessionStorage.clear();
+    // Clear any specific items that might persist
+    ['user', 'cartItems', 'token', 'isSeller'].forEach(key => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+  } catch (error) {
+    console.warn('Could not clear browser storage:', error);
+  }
+};
+
 export const AppContext = createContext();
 
 export const AppContextProvider = ({children})=>{
@@ -190,14 +207,22 @@ export const AppContextProvider = ({children})=>{
         const { data } = await axios.get('/api/user/logout')
         if(data.success){
           toast.success(data.message)
-          setUser(null);
-          setCartItems({}); 
-          navigate('/');
         }else{
           toast.error(data.message)
         }
       } catch (error) {
-        toast.error(error.message)
+        toast.error("Logout failed, but clearing local session")
+      } finally {
+        // Always clear state regardless of server response
+        setUser(null);
+        setCartItems({});
+        setIsSeller(false);
+        
+        // Clear browser storage
+        clearBrowserStorage();
+        
+        // Force page reload to ensure clean state
+        window.location.href = '/';
       }
     }
 
