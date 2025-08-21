@@ -14,7 +14,8 @@ try {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: process.env.NODE_ENV === 'production' ? undefined : undefined
     });
 
     return res.json({success: true, message: "Seller logged in successfully"});
@@ -47,6 +48,9 @@ export const sellerogout = async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    domain: process.env.NODE_ENV === 'production' ? undefined : undefined,
+    maxAge: 0,
+    expires: new Date(0)
    });
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {

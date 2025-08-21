@@ -22,7 +22,12 @@ import Loading from './components/Loading'
 const App = () => {
 
   const isSellerPath = useLocation().pathname.includes("seller");
-  const {showUserLogin, isSeller} =useAppContext()
+  const {showUserLogin, isSeller, isLoading} = useAppContext()
+
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return <Loading />
+  }
 
   return (
     <div className='text-default min-h-screen text-gray-700 bg-white'>

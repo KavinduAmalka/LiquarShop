@@ -27,7 +27,8 @@ export const register = async (req, res)=> {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // CSRF protection
-      maxAge: 7 * 24 * 60 * 60 * 1000 // Cookie expiration time (7 days)
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiration time (7 days)
+      domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
     })
 
     return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
@@ -63,7 +64,8 @@ export const login = async (req, res) => {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', 
-        maxAge: 7 * 24 * 60 * 60 * 1000 
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
       })
 
       return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
@@ -93,6 +95,9 @@ export const logout = async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    domain: process.env.NODE_ENV === 'production' ? undefined : undefined,
+    maxAge: 0,
+    expires: new Date(0)
    });
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {

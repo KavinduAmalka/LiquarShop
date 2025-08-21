@@ -14,7 +14,8 @@ export const AppContextProvider = ({children})=>{
     const currency = import.meta.env?.VITE_CURRENCY || '$';
 
     const navigate =useNavigate();
-    const [user, setUser] = useState(true);
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [isSeller,setIsSeller] = useState(false);
     const [showUserLogin,setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
@@ -49,6 +50,8 @@ export const AppContextProvider = ({children})=>{
           setUser(null)
           // Clear cart items when user is not authenticated
           setCartItems({})
+      } finally {
+          setIsLoading(false)
       }
     }
 
@@ -190,14 +193,19 @@ export const AppContextProvider = ({children})=>{
         const { data } = await axios.get('/api/user/logout')
         if(data.success){
           toast.success(data.message)
-          setUser(null);
-          setCartItems({}); 
-          navigate('/');
         }else{
           toast.error(data.message)
         }
       } catch (error) {
         toast.error(error.message)
+      } finally {
+        // Always clear user state regardless of API response
+        setUser(null);
+        setCartItems({});
+        setIsSeller(false);
+        navigate('/');
+        // Force reload to clear any cached data
+        window.location.reload();
       }
     }
 
@@ -225,7 +233,7 @@ export const AppContextProvider = ({children})=>{
       }
     }
 
-    const value = {navigate, user, setUser, isSeller, setIsSeller, 
+    const value = {navigate, user, setUser, isLoading, isSeller, setIsSeller, 
       showUserLogin,setShowUserLogin, products, setProducts, currency,
       addToCart, updateCartItem, removeFromCart, clearCart, cartItems, searchQuery, setSearchQuery,
       getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser, setCartItems};
