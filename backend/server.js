@@ -19,48 +19,16 @@ await connectDB()
 
 
 //Allow multiple origins
-const allowedOrigins = [
-  'http://localhost:5173', 
-  'https://liquar-shop.vercel.app',
-  'https://your-actual-frontend-domain.vercel.app' // Add your actual frontend domain
-]
-
-// Enhanced CORS configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  exposedHeaders: ['Set-Cookie']
-}
+const allowedOrigins = ['http://localhost:5173', 'https://liquar-shop.vercel.app']
 
 app.post('/stripe',express.raw({type: 'application/json'}), stripeWebhooks)
 
 //Middleware configurations
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors(corsOptions));
+app.use(cors({origin:allowedOrigins, credentials:true}));
 
 app.get('/',(req, res)=> res.send("API is working"));
-
-// Debug route to check cookies (remove in production)
-app.get('/debug/cookies', (req, res) => {
-  res.json({
-    cookies: req.cookies,
-    headers: req.headers,
-    origin: req.get('origin')
-  });
-});
-
 app.use('/api/user', userRouter)
 app.use('/api/seller', sellerRouter)
 app.use('/api/product', productRouter)
