@@ -13,20 +13,10 @@ const authUser = (req, res, next) => {
       req.user = tokenDecoded; // Attach decoded user info to req.user for all routes
       next();
     } else {
-      // Clear invalid cookie
-      res.clearCookie('token', { path: '/' });
       return res.status(401).json({ success: false, message: "Unauthorized access" });
     }
   } catch (error) {
-    // Clear invalid/expired cookie
-    res.clearCookie('token', { path: '/' });
-    res.clearCookie('token'); // Clear without options as fallback
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ success: false, message: "Token expired, please login again" });
-    }
-    
-    return res.status(401).json({ success: false, message: "Invalid token, please login again" });
+    res.json({ success: false, message: error.message });
   }
 }
 

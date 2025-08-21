@@ -43,24 +43,11 @@ export const isSellerAuth = async (req, res) => {
 
 export const sellerogout = async (req, res) => {
   try {
-   // Clear cookie with exact same options as when it was set
    res.clearCookie('sellerToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    path: '/', // Explicitly set path
    });
-   
-   // Also try clearing without domain to ensure compatibility
-   if (process.env.NODE_ENV === 'production') {
-     res.clearCookie('sellerToken', {
-       httpOnly: true,
-       secure: true,
-       sameSite: 'none',
-       path: '/'
-     });
-   }
-   
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {
     console.error(error.message);

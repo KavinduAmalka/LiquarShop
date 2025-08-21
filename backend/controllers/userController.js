@@ -27,7 +27,6 @@ export const register = async (req, res)=> {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // CSRF protection
-      path: '/', // Explicitly set path
       maxAge: 7 * 24 * 60 * 60 * 1000 // Cookie expiration time (7 days)
     })
 
@@ -64,7 +63,6 @@ export const login = async (req, res) => {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', 
-        path: '/', // Explicitly set path
         maxAge: 7 * 24 * 60 * 60 * 1000 
       })
 
@@ -91,77 +89,14 @@ export const isAuth = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-   // Multiple cookie clearing strategies for maximum compatibility
-   
-   // Strategy 1: Clear with production settings
    res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    path: '/'
    });
-   
-   // Strategy 2: Clear with minimal settings
-   res.clearCookie('token', {
-    path: '/'
-   });
-   
-   // Strategy 3: Clear without any options
-   res.clearCookie('token');
-   
-   // Strategy 4: For production, try different domain variations
-   if (process.env.NODE_ENV === 'production') {
-     // Clear with secure settings
-     res.clearCookie('token', {
-       httpOnly: true,
-       secure: true,
-       sameSite: 'none',
-       path: '/'
-     });
-     
-     // Clear with different path variations
-     res.clearCookie('token', { path: '/', domain: '' });
-     res.clearCookie('token', { path: '/', domain: undefined });
-   }
-   
-   // Set response headers to prevent caching
-   res.set({
-     'Cache-Control': 'no-cache, no-store, must-revalidate',
-     'Pragma': 'no-cache',
-     'Expires': '0'
-   });
-   
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {
     console.error(error.message);
     res.json({success: false, message: error.message});
-  }
-}
-
-// Force logout - clears cookies without requiring authentication
-export const forceLogout = async (req, res) => {
-  try {
-    // Multiple cookie clearing strategies for maximum compatibility
-    res.clearCookie('token', { path: '/' });
-    res.clearCookie('token');
-    res.clearCookie('token', { path: '/', domain: '' });
-    res.clearCookie('token', { path: '/', secure: true, sameSite: 'none' });
-    res.clearCookie('token', { path: '/', secure: false, sameSite: 'strict' });
-    
-    // Also clear seller token just in case
-    res.clearCookie('sellerToken', { path: '/' });
-    res.clearCookie('sellerToken');
-    
-    // Set response headers to prevent caching
-    res.set({
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    });
-    
-    return res.json({success: true, message: "Force logout completed"});
-  } catch (error) {
-    console.error(error.message);
-    res.json({success: true, message: "Force logout completed"}); // Always return success
   }
 }
