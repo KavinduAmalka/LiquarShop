@@ -27,7 +27,8 @@ export const register = async (req, res)=> {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // CSRF protection
-      maxAge: 7 * 24 * 60 * 60 * 1000 // Cookie expiration time (7 days)
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiration time (7 days)
+      path: '/' // Ensure cookie is available for all paths
     })
 
     return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
@@ -42,34 +43,42 @@ export const register = async (req, res)=> {
 
 export const login = async (req, res) => {
   try{
+     console.log('Login attempt:', { email: req.body.email, timestamp: new Date().toISOString() });
+     
      const {email, password} = req.body;
 
      if(!email || !password)
       return res.json({success: false, message: "Email and password are required"});
+     
      const user = await User.findOne({email});
+     console.log('User found:', user ? 'Yes' : 'No');
 
      if(!user){
       return res.json({success: false, message: "Invalid email or password"});
      }
 
      const isMatch = await bcrypt.compare(password, user.password)
+     console.log('Password match:', isMatch ? 'Yes' : 'No');
 
       if(!isMatch)
         return res.json({success: false, message: "Invalid email or password"});
       
        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
+       console.log('Token created, setting cookie...');
 
       res.cookie('token',token, {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', 
-        maxAge: 7 * 24 * 60 * 60 * 1000 
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/' // Ensure cookie is available for all paths
       })
 
+      console.log('Login successful for user:', user.email);
       return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
 
   }catch(error){
-    console.error(error.message);
+    console.error('Login error:', error.message);
     res.json({success: false, message: error.message});
   }
 }
@@ -93,6 +102,7 @@ export const logout = async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    path: '/' // Ensure cookie is cleared from all paths
    });
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {

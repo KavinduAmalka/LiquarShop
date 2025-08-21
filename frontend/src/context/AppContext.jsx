@@ -7,6 +7,44 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
+// Add request interceptor for debugging
+axios.interceptors.request.use(
+  (config) => {
+    console.log('Making request:', {
+      url: config.url,
+      method: config.method,
+      baseURL: config.baseURL,
+      withCredentials: config.withCredentials
+    });
+    return config;
+  },
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging
+axios.interceptors.response.use(
+  (response) => {
+    console.log('Response received:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    console.error('Response error:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      data: error.response?.data,
+      message: error.message
+    });
+    return Promise.reject(error);
+  }
+);
+
 export const AppContext = createContext();
 
 export const AppContextProvider = ({children})=>{
@@ -204,10 +242,16 @@ export const AppContextProvider = ({children})=>{
     // Login function that loads cart items from database
     const loginUser = async (email, password, name = null, isRegister = false) => {
       try {
+        console.log('Attempting login/register:', { isRegister, email, timestamp: new Date().toISOString() });
+        
         const endpoint = isRegister ? '/api/user/register' : '/api/user/login';
         const payload = isRegister ? { name, email, password } : { email, password };
         
+        console.log('Making request to:', `${axios.defaults.baseURL}${endpoint}`);
+        
         const { data } = await axios.post(endpoint, payload);
+        
+        console.log('Response received:', { success: data.success, message: data.message });
         
         if(data.success){
           setUser(data.user);
@@ -220,8 +264,15 @@ export const AppContextProvider = ({children})=>{
           return { success: false, message: data.message };
         }
       } catch (error) {
-        toast.error(error.message);
-        return { success: false, message: error.message };
+        console.error('Login request failed:', error);
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          url: error.config?.url
+        });
+        toast.error(error.response?.data?.message || error.message);
+        return { success: false, message: error.response?.data?.message || error.message };
       }
     }
 

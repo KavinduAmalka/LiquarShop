@@ -14,7 +14,8 @@ try {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/' // Ensure cookie is available for all paths
     });
 
     return res.json({success: true, message: "Seller logged in successfully"});
@@ -47,6 +48,7 @@ export const sellerogout = async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    path: '/' // Ensure cookie is cleared from all paths
    });
    return res.json({success: true, message: "Logged out successfully"});
   } catch (error) {
