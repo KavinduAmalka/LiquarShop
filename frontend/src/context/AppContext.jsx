@@ -256,13 +256,9 @@ export const AppContextProvider = ({children})=>{
         console.log('Logout response:', data);
         
         if(data.success){
-          // Force clear all user-related state
+          // Clear user-related state
           setUser(null);
           setCartItems({}); 
-          
-          // Clear any localStorage items that might persist user data
-          localStorage.clear();
-          sessionStorage.clear();
           
           // Force refresh authentication status
           setTimeout(() => {
@@ -279,8 +275,6 @@ export const AppContextProvider = ({children})=>{
         // Even if logout fails on server, clear client state
         setUser(null);
         setCartItems({});
-        localStorage.clear();
-        sessionStorage.clear();
         toast.error(error.response?.data?.message || error.message);
         navigate('/');
       }
@@ -326,19 +320,10 @@ export const AppContextProvider = ({children})=>{
       }
     }
 
-    // Manual cookie clearing function for debugging
-    const clearAllCookies = () => {
-      console.log('Clearing all cookies manually...');
-      document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-      });
-      console.log('Cookies after manual clear:', document.cookie);
-    };
-
     const value = {navigate, user, setUser, isSeller, setIsSeller, 
       showUserLogin,setShowUserLogin, products, setProducts, currency,
       addToCart, updateCartItem, removeFromCart, clearCart, cartItems, searchQuery, setSearchQuery,
-      getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser, setCartItems, clearAllCookies};
+      getCartCount, getCartAmount, axios, fetchProducts, logoutUser, loginUser, fetchUser, setCartItems};
 
     return <AppContext.Provider value={value}>
         {children}
