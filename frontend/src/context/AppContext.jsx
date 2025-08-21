@@ -7,6 +7,13 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
+// Debug environment
+console.log('Environment setup:', {
+  VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+  MODE: import.meta.env.MODE,
+  PROD: import.meta.env.PROD
+});
+
 // Add request interceptor for debugging
 axios.interceptors.request.use(
   (config) => {
@@ -14,7 +21,8 @@ axios.interceptors.request.use(
       url: config.url,
       method: config.method,
       baseURL: config.baseURL,
-      withCredentials: config.withCredentials
+      withCredentials: config.withCredentials,
+      cookies: document.cookie // Show current cookies
     });
     return config;
   },
@@ -52,7 +60,7 @@ export const AppContextProvider = ({children})=>{
     const currency = import.meta.env?.VITE_CURRENCY || '$';
 
     const navigate =useNavigate();
-    const [user, setUser] = useState(true);
+    const [user, setUser] = useState(null); // Start with null instead of true
     const [isSeller,setIsSeller] = useState(false);
     const [showUserLogin,setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
@@ -77,16 +85,27 @@ export const AppContextProvider = ({children})=>{
     // Fetch User Auth Status, User Data and Cart Items
     const fetchUser = async () =>{
       try {
+        console.log('Fetching user auth status...');
         const { data } = await axios.get('/api/user/is-auth');
+        console.log('User auth response:', data);
         if(data.success){
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
+        } else {
+          console.log('User not authenticated:', data.message);
+          setUser(null);
+          setCartItems({});
         }
       } catch (error) {
-          setUser(null)
-          // Clear cart items when user is not authenticated
-          setCartItems({})
+        console.log('User auth check failed:', error.response?.status, error.response?.data);
+        // Don't show error toast for 401 - user is simply not logged in
+        if (error.response?.status !== 401) {
+          console.error('Unexpected auth error:', error);
+        }
+        setUser(null)
+        // Clear cart items when user is not authenticated
+        setCartItems({})
       }
     }
 

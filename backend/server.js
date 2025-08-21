@@ -19,14 +19,43 @@ await connectDB()
 
 
 //Allow multiple origins
-const allowedOrigins = ['http://localhost:5173', 'https://liquar-shop.vercel.app']
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'https://liquar-shop.vercel.app',
+  /\.vercel\.app$/ // Allow all Vercel deployment URLs
+];
 
 app.post('/stripe',express.raw({type: 'application/json'}), stripeWebhooks)
 
 //Middleware configurations
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({origin:allowedOrigins, credentials:true}));
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list or matches pattern
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else {
+        return allowedOrigin.test(origin);
+      }
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+}));
 
 app.get('/',(req, res)=> res.send("API is working"));
 app.use('/api/user', userRouter)
