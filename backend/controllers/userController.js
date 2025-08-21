@@ -23,10 +23,7 @@ export const register = async (req, res)=> {
 
     const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
 
-    res.cookie('token',token, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      maxAge: 7 * 24 * 60 * 60 * 1000 // Cookie expiration time (7 days)
-    })
+    res.cookie('token',token)
 
     return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
 
@@ -57,10 +54,7 @@ export const login = async (req, res) => {
       
        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
 
-      res.cookie('token',token, {
-        httpOnly: true, 
-        maxAge: 7 * 24 * 60 * 60 * 1000 
-      })
+      res.cookie('token',token)
 
       return res.json({success: true, user: {email: user.email, name: user.name, cartItems: user.cartItems || {}}})
 

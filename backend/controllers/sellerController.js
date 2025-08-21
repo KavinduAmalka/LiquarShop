@@ -10,10 +10,7 @@ try {
   if(password === process.env.SELLER_PASSWORD && email === process.env.SELLER_EMAIL){
     const token = jwt.sign({email}, process.env.JWT_SECRET, {expiresIn:'7d'});
 
-    res.cookie('sellerToken', token, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie('sellerToken', token);
 
     return res.json({success: true, message: "Seller logged in successfully"});
   }else{
