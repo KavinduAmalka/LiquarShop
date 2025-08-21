@@ -45,10 +45,15 @@ export const AppContextProvider = ({children})=>{
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
+        } else {
+          // If API returns success: false, clear user state
+          setUser(null)
+          setCartItems({})
         }
       } catch (error) {
+          // If there's a network error or auth fails, clear user state
+          console.log('Auth check failed:', error.message);
           setUser(null)
-          // Clear cart items when user is not authenticated
           setCartItems({})
       } finally {
           setIsLoading(false)
@@ -72,6 +77,13 @@ export const AppContextProvider = ({children})=>{
 
     // Load products when component mounts
     useEffect(() => {
+        // Clear any stale data on app load
+        if (performance.navigation.type === 1) {
+          // Page was refreshed, clear potentially stale data
+          localStorage.removeItem('user');
+          sessionStorage.removeItem('user');
+        }
+        
         fetchUser();
         fetchSeller();
         fetchProducts();
@@ -203,9 +215,18 @@ export const AppContextProvider = ({children})=>{
         setUser(null);
         setCartItems({});
         setIsSeller(false);
+        
+        // Clear any local storage data
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Navigate to home
         navigate('/');
-        // Force reload to clear any cached data
-        window.location.reload();
+        
+        // Force page reload to clear all cached state
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
       }
     }
 
