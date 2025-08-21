@@ -7,52 +7,6 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
-// Debug environment
-console.log('Environment setup:', {
-  VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
-  MODE: import.meta.env.MODE,
-  PROD: import.meta.env.PROD
-});
-
-// Add request interceptor for debugging
-axios.interceptors.request.use(
-  (config) => {
-    console.log('Making request:', {
-      url: config.url,
-      method: config.method,
-      baseURL: config.baseURL,
-      withCredentials: config.withCredentials,
-      cookies: document.cookie // Show current cookies
-    });
-    return config;
-  },
-  (error) => {
-    console.error('Request error:', error);
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor for debugging
-axios.interceptors.response.use(
-  (response) => {
-    console.log('Response received:', {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    });
-    return response;
-  },
-  (error) => {
-    console.error('Response error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      data: error.response?.data,
-      message: error.message
-    });
-    return Promise.reject(error);
-  }
-);
-
 export const AppContext = createContext();
 
 export const AppContextProvider = ({children})=>{
@@ -60,7 +14,7 @@ export const AppContextProvider = ({children})=>{
     const currency = import.meta.env?.VITE_CURRENCY || '$';
 
     const navigate =useNavigate();
-    const [user, setUser] = useState(null); // Start with null instead of true
+    const [user, setUser] = useState(true);
     const [isSeller,setIsSeller] = useState(false);
     const [showUserLogin,setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
@@ -85,31 +39,16 @@ export const AppContextProvider = ({children})=>{
     // Fetch User Auth Status, User Data and Cart Items
     const fetchUser = async () =>{
       try {
-        console.log('Fetching user auth status...');
-        console.log('Current cookies:', document.cookie);
-        
         const { data } = await axios.get('/api/user/is-auth');
-        console.log('User auth response:', data);
-        
-        if(data.success && data.user){
-           console.log('Setting user data:', data.user);
+        if(data.success){
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
-        } else {
-          console.log('User not authenticated:', data.message);
-          setUser(null);
-          setCartItems({});
         }
       } catch (error) {
-        console.log('User auth check failed:', error.response?.status, error.response?.data);
-        // Don't show error toast for 401 - user is simply not logged in
-        if (error.response?.status !== 401) {
-          console.error('Unexpected auth error:', error);
-        }
-        setUser(null)
-        // Clear cart items when user is not authenticated
-        setCartItems({})
+          setUser(null)
+          // Clear cart items when user is not authenticated
+          setCartItems({})
       }
     }
 
@@ -130,7 +69,6 @@ export const AppContextProvider = ({children})=>{
 
     // Load products when component mounts
     useEffect(() => {
-        console.log('AppContext: Component mounting, starting initial data fetch...');
         fetchUser();
         fetchSeller();
         fetchProducts();
@@ -246,113 +184,44 @@ export const AppContextProvider = ({children})=>{
       return Math.floor(totalAmount * 100) / 100; 
     }
 
-    // Manual client-side cookie clearing as fallback
-    const clearClientCookies = () => {
-      console.log('Manually clearing client-side cookies...');
-      // Get all cookies and clear them
-      document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/;domain=" + window.location.hostname); 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-      });
-      console.log('Client cookies after clearing:', document.cookie);
-    };
-
     // Logout function that clears cart items
     const logoutUser = async () => {
       try {
-        console.log('Starting logout process...');
-        console.log('Current user before logout:', user);
-        console.log('Current cookies before logout:', document.cookie);
-        
         const { data } = await axios.get('/api/user/logout')
-        
-        console.log('Logout response:', data);
-        
         if(data.success){
-          console.log('Server logout successful, clearing client state...');
-        } else {
-          console.log('Server logout failed, but continuing with client cleanup:', data.message);
+          toast.success(data.message)
+          setUser(null);
+          setCartItems({}); 
+          navigate('/');
+        }else{
+          toast.error(data.message)
         }
-        
-        // Always clear client state regardless of server response
-        setUser(null);
-        setCartItems({}); 
-        
-        // Clear cookies manually as additional safety measure
-        clearClientCookies();
-        
-        // Force refresh authentication status after a short delay
-        setTimeout(() => {
-          console.log('Refreshing auth status after logout...');
-          fetchUser();
-        }, 300);
-        
-        toast.success(data.success ? data.message : "Logged out successfully");
-        navigate('/');
-        
       } catch (error) {
-        console.error('Logout request failed:', error);
-        console.error('Error details:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message
-        });
-        
-        // Even if logout fails on server, clear client state
-        console.log('Clearing client state due to logout error...');
-        setUser(null);
-        setCartItems({});
-        
-        // Clear cookies manually
-        clearClientCookies();
-        
-        toast.success('Logged out successfully');
-        navigate('/');
-        
-        // Still try to refresh auth status
-        setTimeout(() => {
-          fetchUser();
-        }, 300);
+        toast.error(error.message)
       }
     }
 
     // Login function that loads cart items from database
     const loginUser = async (email, password, name = null, isRegister = false) => {
       try {
-        console.log('Attempting login/register:', { isRegister, email, timestamp: new Date().toISOString() });
-        
         const endpoint = isRegister ? '/api/user/register' : '/api/user/login';
         const payload = isRegister ? { name, email, password } : { email, password };
         
-        console.log('Making request to:', `${axios.defaults.baseURL}${endpoint}`);
-        
         const { data } = await axios.post(endpoint, payload);
         
-        console.log('Response received:', { success: data.success, message: data.message });
-        
         if(data.success){
-          console.log('Login successful! User data:', data.user);
           setUser(data.user);
           // Fetch the complete user data with cart items after login/register
           await fetchUser();
-          toast.success('Login successful!');
           navigate('/');
           return { success: true };
         } else {
-          console.log('Login failed:', data.message);
           toast.error(data.message);
           return { success: false, message: data.message };
         }
       } catch (error) {
-        console.error('Login request failed:', error);
-        console.error('Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-          url: error.config?.url
-        });
-        toast.error(error.response?.data?.message || error.message);
-        return { success: false, message: error.response?.data?.message || error.message };
+        toast.error(error.message);
+        return { success: false, message: error.message };
       }
     }
 
