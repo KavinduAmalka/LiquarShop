@@ -17,8 +17,7 @@ const port = process.env.PORT || 4000;
 
 await connectDB()
 
-
-//Allow multiple origins
+//Allow frontend origins
 const allowedOrigins = ['http://localhost:5173', 'https://liquar-shop.vercel.app']
 
 app.post('/stripe',express.raw({type: 'application/json'}), stripeWebhooks)
