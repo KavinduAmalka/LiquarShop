@@ -14,7 +14,7 @@ export const AppContextProvider = ({children})=>{
     const currency = import.meta.env?.VITE_CURRENCY || '$';
 
     const navigate =useNavigate();
-    const [user, setUser] = useState(true);
+    const [user, setUser] = useState(null); // Initialize as null instead of true
     const [isSeller,setIsSeller] = useState(false);
     const [showUserLogin,setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
@@ -44,6 +44,9 @@ export const AppContextProvider = ({children})=>{
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
+        } else {
+           setUser(null)
+           setCartItems({})
         }
       } catch (error) {
           setUser(null)
@@ -198,6 +201,10 @@ export const AppContextProvider = ({children})=>{
         }
       } catch (error) {
         toast.error(error.message)
+        // Even if logout request fails, clear local state
+        setUser(null);
+        setCartItems({});
+        navigate('/');
       }
     }
 
