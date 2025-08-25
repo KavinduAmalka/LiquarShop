@@ -228,10 +228,6 @@ We welcome contributions! Please follow these steps:
 - [ ] **Social Features**: Reviews and ratings system
 
 
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
 ## 👨‍💻 Author
 
 **Kavindu Amalka**
