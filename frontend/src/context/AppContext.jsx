@@ -11,7 +11,7 @@ export const AppContext = createContext();
 
 export const AppContextProvider = ({children})=>{
 
-    const currency = import.meta.env?.VITE_CURRENCY || '$';
+    const currency = import.meta.env?.VITE_CURRENCY || "Rs.";
 
     const navigate =useNavigate();
     const [user, setUser] = useState(null); // Initialize as null instead of true
